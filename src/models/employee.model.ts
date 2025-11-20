@@ -2,27 +2,23 @@ export interface Employee {
   id?: string;
   name: string;
   designation: string;
-
+  salaryMonth: string;
   basicSalary: number;
   houseRentAllowance: number;
   utilityAllowance: number;
   medicalAllowance: number;
   conveyanceAllowance: number;
   arrears: number;
-
-  grossSalary: number;             // Added
+  grossSalary: number;
   bonus: number;
   increment: number;
   totalGrossSalary: number;
-
   incomeTax: number;
   loanDeduction: number;
   eobi: number;
   otherDeductions: number;
-
-  totalDeductions: number;         // Added
-  netPay: number;                  // Added
-  inWords: string;                 // Updated to string (NOT number)
-
+  totalDeductions: number;
+  netPay: number;
+  inWords: string;
   downloading?: boolean;
 }

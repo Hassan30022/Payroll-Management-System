@@ -16,7 +16,7 @@ type SortDirection = 'asc' | 'desc';
     <div class="table-container">
       <div class="controls">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
+          <!-- <span class="search-icon">🔍</span> -->
           <input
             type="text"
             [(ngModel)]="searchTerm"

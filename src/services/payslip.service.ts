@@ -4,65 +4,84 @@ import jsPDF from 'jspdf';
 import html2canvas from "html2canvas";
 
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class PayslipService {
-generatePayslipPDF(employee: Employee): Promise<void> {
-  return new Promise((resolve) => {
-    const html = this.generatePayslipHTML(employee);
+    generatedDate = this.getTodayDate();
 
-    const container = document.createElement("div");
-    container.innerHTML = html;
-    container.style.position = "fixed";
-    container.style.left = "-999px";
-    container.style.top = "-999px";
-    container.style.width = "800px";
-    container.style.background = "#000";
-    document.body.appendChild(container);
+    getTodayDate(): string {
+        const today = new Date();
+        const dd = String(today.getDate()).padStart(2, '0');
+        const mm = String(today.getMonth() + 1).padStart(2, '0');
+        const yyyy = today.getFullYear();
 
-    html2canvas(container, {
-      scale: 3,
-      backgroundColor: null
-    }).then((canvas) => {
-      const imgData = canvas.toDataURL("image/png");
+        return `${dd}-${mm}-${yyyy}`;
+    }
 
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgProps = pdf.getImageProperties(imgData);
+    formatNumber(value: number): string {
+        if (value == null) return '';
+        return value.toLocaleString('en-US', {
+            minimumFractionDigits: 1,
+            maximumFractionDigits: 1
+        });
+    }
 
-      const pdfWidth = 210;
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    generatePayslipPDF(employee: Employee): Promise<void> {
+        return new Promise((resolve) => {
+            const html = this.generatePayslipHTML(employee);
 
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            const container = document.createElement("div");
+            container.innerHTML = html;
+            container.style.position = "fixed";
+            container.style.left = "-999px";
+            container.style.top = "-999px";
+            container.style.width = "800px";
+            container.style.background = "#000";
+            document.body.appendChild(container);
 
-      pdf.save(`${employee.name}_payslip.pdf`);
+            html2canvas(container, {
+                scale: 3,
+                backgroundColor: null
+            }).then((canvas) => {
+                const imgData = canvas.toDataURL("image/png");
 
-      container.remove();
-      resolve(); // 🟢 PDF fully saved — tell component to stop loader
-    });
-  });
-}
+                const pdf = new jsPDF("p", "mm", "a4");
+                const imgProps = pdf.getImageProperties(imgData);
+
+                const pdfWidth = 210;
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+                pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+
+                pdf.save(`${employee.name}_payslip.pdf`);
+
+                container.remove();
+                resolve(); // 🟢 PDF fully saved — tell component to stop loader
+            });
+        });
+    }
 
 
-  generatePayslipHTML(employee: Employee): string {
-    const totalEarnings =
-      employee.basicSalary +
-      employee.houseRentAllowance +
-      employee.utilityAllowance +
-      employee.medicalAllowance +
-      employee.conveyanceAllowance +
-      employee.arrears +
-      employee.bonus +
-      employee.increment;
+    generatePayslipHTML(employee: Employee): string {
+        const totalEarnings =
+            employee.basicSalary +
+            employee.houseRentAllowance +
+            employee.utilityAllowance +
+            employee.medicalAllowance +
+            employee.conveyanceAllowance +
+            employee.arrears +
+            employee.bonus +
+            employee.increment;
 
-    const totalDeductions =
-      employee.incomeTax +
-      employee.loanDeduction +
-      employee.eobi +
-      employee.otherDeductions;
+        const totalDeductions =
+            employee.incomeTax +
+            employee.loanDeduction +
+            employee.eobi +
+            employee.otherDeductions;
 
-    const netSalary = totalEarnings - totalDeductions;
+        const netSalary = totalEarnings - totalDeductions;
 
-    return `<!DOCTYPE html>
+        return `<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -82,7 +101,7 @@ generatePayslipPDF(employee: Employee): Promise<void> {
         .page {
             width: 210mm;
             min-height: 297mm;
-            padding: 20mm;
+            padding: 20mm 10mm;
             margin: auto;
             background: #ffffff;
         }
@@ -247,15 +266,15 @@ generatePayslipPDF(employee: Employee): Promise<void> {
         <table class="top-info">
             <tr>
                 <td class="label">Employee Name</td>
-                <td class="value"></td>
+                <td class="value">${employee.name ?? ''}</td>
                 <td class="label">Designation</td>
-                <td class="value"></td>
+                <td class="value">${employee.designation ?? ''}</td>
             </tr>
             <tr>
                 <td class="label">Employee ID</td>
-                <td class="value"></td>
+                <td class="value">${employee.id ?? ''}</td>
                 <td class="label">Month/Year</td>
-                <td class="value"></td>
+                <td class="value">${employee.salaryMonth ?? ''}</td>
             </tr>
         </table>
 
@@ -270,56 +289,56 @@ generatePayslipPDF(employee: Employee): Promise<void> {
                 </tr>
                 <tr>
                     <td class="label">Basic Salary</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.basicSalary)}</td>
                     <td class="label">Income Tax</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.incomeTax)}</td>
                 </tr>
 
                 <tr>
                     <td class="label">House Rent Allowance</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.houseRentAllowance)}</td>
                     <td class="label">Loan Deduction</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.loanDeduction)}</td>
                 </tr>
 
                 <tr>
                     <td class="label">Utility Allowance</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.utilityAllowance)}</td>
                     <td class="label">EOBI</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.eobi)}</td>
                 </tr>
 
                 <tr>
                     <td class="label">Medical Allowance</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.medicalAllowance)}</td>
                     <td class="label">Other Deductions</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.otherDeductions)}</td>
                 </tr>
 
                 <tr>
                     <td class="label">Conveyance Allowance</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.conveyanceAllowance)}</td>
                     <td class="value"></td>
                     <td class="value"></td>
                 </tr>
 
                 <tr>
                     <td class="label">Arrears</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.arrears)}</td>
                     <td class="value"></td>
                     <td class="value"></td>
                 </tr>
 
                 <tr>
                     <td class="label">Bonus</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.bonus)}</td>
                     <td class="value"></td>
                     <td class="value"></td>
                 </tr>
 
                 <tr>
                     <td class="label">Increment</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.increment)}</td>
                     <td class="value"></td>
                     <td class="value"></td>
                 </tr>
@@ -327,9 +346,9 @@ generatePayslipPDF(employee: Employee): Promise<void> {
                 <!-- Total Row -->
                 <tr class="total-row">
                     <td class="label">Total Gross Salary</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.totalGrossSalary)}</td>
                     <td class="label">Total Deductions</td>
-                    <td class="value"></td>
+                    <td class="value">${this.formatNumber(employee.totalDeductions)}</td>
                 </tr>
 
             </tbody>
@@ -339,16 +358,16 @@ generatePayslipPDF(employee: Employee): Promise<void> {
         <table class="net-table">
             <tr>
                 <td class="label">Net Salary (Figures)</td>
-                <td class="value"></td>
+                <td class="value">${this.formatNumber(employee.netPay)}</td>
             </tr>
             <tr>
                 <td class="label">Net Salary (Words)</td>
-                <td class="value"></td>
+                <td class="value">${employee.inWords ?? ''}</td>
             </tr>
         </table>
 
         <!-- GENERATED DATE -->
-        <p class="generated">Generated on <span class="date"></span></p>
+        <p class="generated">Generated on <span class="date">${this.generatedDate ?? ""}</span></p>
 
         <!-- FOOTER -->
         <p class="footer-note">
@@ -361,5 +380,5 @@ generatePayslipPDF(employee: Employee): Promise<void> {
 
 </html>`;
 
-  }
+    }
 }

@@ -22,6 +22,7 @@ export class EmployeeService {
       id: row['Employee ID'] || row['ID'] || '',
       name: row['Employee Name'] || row['Name'] || '',
       designation: row['designation'] || row['Designation'] || '',
+      salaryMonth: row['salaryMonth'] || row['Salary Month'] || '',
       basicSalary: this.parseNumber(row['Basic Salary'] || row['basicSalary']),
       houseRentAllowance: this.parseNumber(row['House Rent Allowance'] || row['houseRentAllowance']),
       utilityAllowance: this.parseNumber(row['Utility Allowance'] || row['utilityAllowance']),
@@ -38,7 +39,7 @@ export class EmployeeService {
       otherDeductions: this.parseNumber(row['Other Deductions'] || row['otherDeductions']),
       totalDeductions: this.parseNumber(row['Total Deductions'] || row['totalDeductions']),
       netPay: this.parseNumber(row['Net Pay'] || row['netPay']),
-      inWords: row['In Words'] || row['inWords'],
+      inWords: row['In Words'] || row['inWords'] || row['In words'],
     }));
   }
 

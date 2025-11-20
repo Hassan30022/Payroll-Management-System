@@ -21,7 +21,7 @@ import { EmployeeService } from '../services/employee.service';
           (change)="onFileSelected($event)"
           style="display: none"
         />
-        <div class="upload-icon">📊</div>
+        <!-- <div class="upload-icon">📊</div> -->
         <h3>Import Employee Data</h3>
         <p>Click to browse or drag and drop Excel file</p>
         <p class="file-info">.xlsx, .xls files accepted</p>
@@ -142,7 +142,7 @@ export class FileUploadComponent {
   constructor(
     private excelImportService: ExcelImportService,
     private employeeService: EmployeeService
-  ) {}
+  ) { }
 
   onFileSelected(event: any) {
     const file = event.target.files[0];

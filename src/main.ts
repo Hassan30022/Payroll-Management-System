@@ -12,7 +12,7 @@ import { EmployeeTableComponent } from './components/employee-table.component';
     <div class="app-container">
       <header class="app-header">
         <div class="header-content">
-          <h1 class="app-title">💼 Payroll Management System</h1>
+          <h1 class="app-title">Payroll Management System</h1>
           <p class="app-subtitle">Employee Salary Management & Payslip Generation</p>
         </div>
       </header>
