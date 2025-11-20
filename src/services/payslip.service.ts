@@ -7,37 +7,37 @@ import html2canvas from "html2canvas";
   providedIn: 'root'
 })
 export class PayslipService {
-generatePayslipPDF(employee: Employee) {
-  const html = this.generatePayslipHTML(employee);
+  generatePayslipPDF(employee: Employee) {
+    const html = this.generatePayslipHTML(employee);
 
-  // Create temp container
-  const container = document.createElement("div");
-  container.innerHTML = html;
-  container.style.position = "fixed";
-  container.style.left = "0";
-  container.style.top = "0";
-  container.style.width = "800px"; 
-  container.style.background = "#000"; 
-  document.body.appendChild(container);
+    // Create temp container
+    const container = document.createElement("div");
+    container.innerHTML = html;
+    container.style.position = "fixed";
+    container.style.left = "-999";
+    container.style.top = "-999";
+    container.style.width = "800px";
+    container.style.background = "#000";
+    document.body.appendChild(container);
 
-  html2canvas(container, {
-    scale: 3, // High quality
-    backgroundColor: null
-  }).then((canvas) => {
-    const imgData = canvas.toDataURL("image/png");
+    html2canvas(container, {
+      scale: 3, // High quality
+      backgroundColor: null
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL("image/png");
 
-    const pdf = new jsPDF("p", "mm", "a4");
-    const imgProps = pdf.getImageProperties(imgData);
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgProps = pdf.getImageProperties(imgData);
 
-    const pdfWidth = 210;
-    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+      const pdfWidth = 210;
+      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
 
-    pdf.save(`${employee.name}_payslip.pdf`);
-    container.remove();
-  });
-}
+      pdf.save(`${employee.name}_payslip.pdf`);
+      container.remove();
+    });
+  }
 
 
   generatePayslipHTML(employee: Employee): string {
@@ -59,220 +59,294 @@ generatePayslipPDF(employee: Employee) {
 
     const netSalary = totalEarnings - totalDeductions;
 
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <style>
-          * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-          }
-          body {
-            font-family: 'Arial', sans-serif;
-            padding: 20px;
-            background: #000;
-            color: #fff;
-          }
-          .payslip-container {
-            max-width: 210mm;
-            margin: 0 auto;
-            background: #000;
-            border: 2px solid #5a7ea6;
-          }
-          .header {
-            background: #5a7ea6;
-            color: #000;
-            padding: 20px;
-            text-align: center;
-            border-bottom: 3px solid #a2cd96;
-          }
-          .header h1 {
-            font-size: 28px;
-            margin-bottom: 5px;
-            font-weight: bold;
-          }
-          .header p {
+    return `<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Payslip</title>
+    <style>
+        /* GLOBAL FONT COLOR */
+        body,
+        .page,
+        .page * {
+            color: #000 !important;
+            font-family: Arial, sans-serif;
             font-size: 14px;
-            margin-top: 5px;
-          }
-          .employee-info {
-            padding: 20px;
-            background: #1a1a1a;
-            border-bottom: 2px solid #5a7ea6;
-          }
-          .info-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #333;
-          }
-          .info-row:last-child {
-            border-bottom: none;
-          }
-          .info-label {
-            font-weight: bold;
-            color: #a2cd96;
-          }
-          .info-value {
-            color: #fff;
-          }
-          .salary-details {
-            padding: 20px;
-          }
-          .section-title {
-            background: #5a7ea6;
-            color: #000;
-            padding: 10px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 15px;
+        }
+
+        /* A4 page */
+        .page {
+            width: 210mm;
+            min-height: 297mm;
+            padding: 20mm;
+            margin: auto;
+            background: #ffffff;
+        }
+
+        /* Logo placeholder */
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: transparent;
+            float: left;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
             margin-bottom: 10px;
-          }
-          .salary-table {
+            justify-items: center;
+            margin-top: 40px;
+        }
+
+        .header h2 {
+            font-size: 19px;
+            font-weight: bold;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 20px;
+            margin: 15px 0;
+            font-weight: bold;
+            place-self: center;
+        }
+
+        /* Employee info table */
+        .top-info {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+        }
+
+        .top-info td {
+            border: 1px solid #000;
+            padding: 6px;
+            width: 23%;
+        }
+
+        .top-info .label {
+            font-weight: bold;
+            width: 27%;
+            background-color: #dae8f7;
+        }
+
+        /* Main tables */
+        .main-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
-          }
-          .salary-table tr {
-            border-bottom: 1px solid #333;
-          }
-          .salary-table td {
-            padding: 10px;
-          }
-          .salary-table td:first-child {
-            color: #a2cd96;
-            width: 70%;
-          }
-          .salary-table td:last-child {
+        }
+
+        .main-table .label {
+            width: 27%;
+            font-weight: bold;
+            background-color: #dae8f7;
+        }
+
+        .main-table .label2 {
+            width: 23%;
+            font-weight: bold;
+            background-color: #dae8f7;
+        }
+
+        .main-table .value {
+            width: 23%;
+            font-weight: normal;
             text-align: right;
-            font-weight: bold;
-            color: #fff;
-          }
-          .total-row {
-            background: #1a1a1a;
-            font-weight: bold;
-            font-size: 16px;
-          }
-          .total-row td {
-            padding: 15px 10px;
-            border-top: 2px solid #5a7ea6;
-          }
-          .net-salary {
-            background: #a2cd96;
-            color: #000;
-            padding: 20px;
+        }
+
+        .main-table th,
+        .main-table td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        .header-row {
             text-align: center;
-            margin-top: 20px;
-          }
-          .net-salary h2 {
-            font-size: 18px;
-            margin-bottom: 10px;
-          }
-          .net-salary .amount {
-            font-size: 32px;
-            font-weight: bold;
-          }
-          .footer {
-            padding: 20px;
+        }
+
+        .main-table th {
             text-align: center;
-            color: #888;
+            font-weight: bold;
+            background: #f3f3f3;
+        }
+
+        .total-row td {
+            font-weight: bold;
+        }
+
+        /* Net salary table */
+        .net-table {
+            width: 50%;
+            border-collapse: collapse;
+            margin-left: auto;
+            margin-bottom: 20px;
+        }
+
+        .net-table td {
+            border: 1px solid #000;
+            padding: 6px;
+        }
+
+        .net-table .label {
+            width: 54%;
+            font-weight: bold;
+            background-color: #dae8f7;
+        }
+
+        .net-table .value {
+            width: 46%;
+            text-align: right;
+        }
+
+        /* Generated date */
+        .generated {
             font-size: 12px;
-            border-top: 2px solid #5a7ea6;
-            margin-top: 30px;
-          }
-        </style>
-      </head>
-      <body>
-        <div class="payslip-container">
-          <div class="header">
-            <h1>SALARY SLIP</h1>
-            <p>Pay Period: ${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</p>
-          </div>
+            margin-top: 10px;
+            font-weight: bold;
+        }
 
-          <div class="employee-info">
-            <div class="info-row">
-              <span class="info-label">Employee Name:</span>
-              <span class="info-value">${employee.name}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Designation:</span>
-              <span class="info-value">${employee.designation}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Employee ID:</span>
-              <span class="info-value">${employee.id || 'N/A'}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Date Generated:</span>
-              <span class="info-value">${new Date().toLocaleDateString()}</span>
-            </div>
-          </div>
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            font-size: 12px;
+            margin-top: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
 
-          <div class="salary-details">
-            <div class="section-title">EARNINGS</div>
-            <table class="salary-table">
-              <tr>
-                <td>Basic Salary</td>
-                <td>Rs. ${employee.basicSalary.toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td>House Rent Allowance</td>
-                <td>Rs. ${employee.houseRentAllowance.toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td>Utility Allowance</td>
-                <td>Rs. ${employee.utilityAllowance.toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td>Medical Allowance</td>
-                <td>Rs. ${employee.medicalAllowance.toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td>Conveyance Allowance</td>
-                <td>Rs. ${employee.conveyanceAllowance.toLocaleString()}</td>
-              </tr>
-              ${employee.arrears > 0 ? `<tr><td>Arrears</td><td>Rs. ${employee.arrears.toLocaleString()}</td></tr>` : ''}
-              ${employee.bonus > 0 ? `<tr><td>Bonus</td><td>Rs. ${employee.bonus.toLocaleString()}</td></tr>` : ''}
-              ${employee.increment > 0 ? `<tr><td>Increment</td><td>Rs. ${employee.increment.toLocaleString()}</td></tr>` : ''}
-              <tr class="total-row">
-                <td>Total Earnings</td>
-                <td>Rs. ${totalEarnings.toLocaleString()}</td>
-              </tr>
-            </table>
+<body>
 
-            <div class="section-title">DEDUCTIONS</div>
-            <table class="salary-table">
-              <tr>
-                <td>Income Tax</td>
-                <td>Rs. ${employee.incomeTax.toLocaleString()}</td>
-              </tr>
-              <tr>
-                <td>EOBI</td>
-                <td>Rs. ${employee.eobi.toLocaleString()}</td>
-              </tr>
-              ${employee.loanDeduction > 0 ? `<tr><td>Loan Deduction</td><td>Rs. ${employee.loanDeduction.toLocaleString()}</td></tr>` : ''}
-              ${employee.otherDeductions > 0 ? `<tr><td>Other Deductions</td><td>Rs. ${employee.otherDeductions.toLocaleString()}</td></tr>` : ''}
-              <tr class="total-row">
-                <td>Total Deductions</td>
-                <td>Rs. ${totalDeductions.toLocaleString()}</td>
-              </tr>
-            </table>
+    <div class="page">
 
-            <div class="net-salary">
-              <h2>NET SALARY</h2>
-              <div class="amount">Rs. ${netSalary.toLocaleString()}</div>
-            </div>
-          </div>
-
-          <div class="footer">
-            <p>This is a computer-generated payslip and does not require a signature.</p>
-            <p>For any queries, please contact the HR department.</p>
-          </div>
+        <!-- HEADER -->
+        <div class="header">
+            <h2>The Synergates Business Solutions (PVT) Ltd.</h2>
+            <p>Office # 406, 4th Floor, Kashif Center, Main Sharah-e-Faisal, Karachi 75230 - Pakistan</p>
         </div>
-      </body>
-      </html>
-    `;
+
+        <h3 class="title">Salary Slip</h3>
+
+        <!-- EMPLOYEE INFO TABLE -->
+        <table class="top-info">
+            <tr>
+                <td class="label">Employee Name</td>
+                <td class="value"></td>
+                <td class="label">Designation</td>
+                <td class="value"></td>
+            </tr>
+            <tr>
+                <td class="label">Employee ID</td>
+                <td class="value"></td>
+                <td class="label">Month/Year</td>
+                <td class="value"></td>
+            </tr>
+        </table>
+
+        <!-- MAIN EARNINGS/DEDUCTIONS TABLE -->
+        <table class="main-table">
+            <tbody>
+                <tr class="header-row">
+                    <td class="label">Earnings</td>
+                    <td class="label2">Amount</td>
+                    <td class="label">Deductions</td>
+                    <td class="label2">Amount</td>
+                </tr>
+                <tr>
+                    <td class="label">Basic Salary</td>
+                    <td class="value"></td>
+                    <td class="label">Income Tax</td>
+                    <td class="value"></td>
+                </tr>
+
+                <tr>
+                    <td class="label">House Rent Allowance</td>
+                    <td class="value"></td>
+                    <td class="label">Loan Deduction</td>
+                    <td class="value"></td>
+                </tr>
+
+                <tr>
+                    <td class="label">Utility Allowance</td>
+                    <td class="value"></td>
+                    <td class="label">EOBI</td>
+                    <td class="value"></td>
+                </tr>
+
+                <tr>
+                    <td class="label">Medical Allowance</td>
+                    <td class="value"></td>
+                    <td class="label">Other Deductions</td>
+                    <td class="value"></td>
+                </tr>
+
+                <tr>
+                    <td class="label">Conveyance Allowance</td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                </tr>
+
+                <tr>
+                    <td class="label">Arrears</td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                </tr>
+
+                <tr>
+                    <td class="label">Bonus</td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                </tr>
+
+                <tr>
+                    <td class="label">Increment</td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                    <td class="value"></td>
+                </tr>
+
+                <!-- Total Row -->
+                <tr class="total-row">
+                    <td class="label">Total Gross Salary</td>
+                    <td class="value"></td>
+                    <td class="label">Total Deductions</td>
+                    <td class="value"></td>
+                </tr>
+
+            </tbody>
+        </table>
+
+        <!-- NET SALARY BOX -->
+        <table class="net-table">
+            <tr>
+                <td class="label">Net Salary (Figures)</td>
+                <td class="value"></td>
+            </tr>
+            <tr>
+                <td class="label">Net Salary (Words)</td>
+                <td class="value"></td>
+            </tr>
+        </table>
+
+        <!-- GENERATED DATE -->
+        <p class="generated">Generated on <span class="date"></span></p>
+
+        <!-- FOOTER -->
+        <p class="footer-note">
+            This is a computer-generated payslip and does not require signature.
+        </p>
+
+    </div>
+
+</body>
+
+</html>`;
+
   }
 }
