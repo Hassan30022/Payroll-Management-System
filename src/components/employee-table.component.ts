@@ -84,7 +84,8 @@ type SortDirection = 'asc' | 'desc';
                   <td class="amount net-salary">Rs. {{ calculateNetSalary(employee).toLocaleString() }}</td>
                   <td>
                     <button class="download-btn" (click)="downloadPayslip(employee)">
-                      📄 Download Payslip
+                        <span *ngIf="!employee.downloading">Download</span>
+                        <div *ngIf="employee.downloading" class="loader"></div>
                     </button>
                   </td>
                 </tr>
@@ -96,6 +97,26 @@ type SortDirection = 'asc' | 'desc';
     </div>
   `,
   styles: [`
+
+
+.loader {
+  width: 22px;
+  height: 22px;
+  padding: 8px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: #25b09b;
+  justify-self: center;
+  --_m: 
+    conic-gradient(#0000 10%,#000),
+    linear-gradient(#000 0 0) content-box;
+  -webkit-mask: var(--_m);
+          mask: var(--_m);
+  -webkit-mask-composite: source-out;
+          mask-composite: subtract;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {to{transform: rotate(1turn)}}
     .table-container {
       padding: 20px;
     }
@@ -254,6 +275,8 @@ type SortDirection = 'asc' | 'desc';
       font-weight: 500;
       transition: all 0.3s ease;
       white-space: nowrap;
+      width: 100px;
+      height: 40px;
     }
 
     .download-btn:hover {
@@ -310,11 +333,12 @@ export class EmployeeTableComponent implements OnInit {
   searchTerm = '';
   sortField: SortField | null = null;
   sortDirection: SortDirection = 'asc';
+  downloading: boolean = true;
 
   constructor(
     private employeeService: EmployeeService,
     private payslipService: PayslipService
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.employeeService.employees$.subscribe(employees => {
@@ -398,7 +422,9 @@ export class EmployeeTableComponent implements OnInit {
     return employee.totalGrossSalary - this.calculateDeductions(employee);
   }
 
-  downloadPayslip(employee: Employee) {
-    this.payslipService.generatePayslipPDF(employee);
+  async downloadPayslip(employee: Employee) {
+    employee.downloading = true
+    await this.payslipService.generatePayslipPDF(employee);
+    employee.downloading = false
   }
 }

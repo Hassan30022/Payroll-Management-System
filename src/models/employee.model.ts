@@ -15,4 +15,5 @@ export interface Employee {
   bonus: number;
   increment: number;
   totalGrossSalary: number;
+  downloading?: boolean;
 }
