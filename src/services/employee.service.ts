@@ -19,22 +19,26 @@ export class EmployeeService {
 
   parseExcelData(data: any[]): Employee[] {
     return data.map((row, index) => ({
-      id: `emp-${index + 1}`,
-      name: row['name'] || row['Name'] || '',
+      id: row['Employee ID'] || row['ID'] || '',
+      name: row['Employee Name'] || row['Name'] || '',
       designation: row['designation'] || row['Designation'] || '',
       basicSalary: this.parseNumber(row['Basic Salary'] || row['basicSalary']),
-      incomeTax: this.parseNumber(row['IncomeTax'] || row['Income Tax']),
       houseRentAllowance: this.parseNumber(row['House Rent Allowance'] || row['houseRentAllowance']),
-      loanDeduction: this.parseNumber(row['Loan Deduction-'] || row['loanDeduction']),
       utilityAllowance: this.parseNumber(row['Utility Allowance'] || row['utilityAllowance']),
-      eobi: this.parseNumber(row['EOBI'] || row['eobi']),
       medicalAllowance: this.parseNumber(row['Medical Allowance'] || row['medicalAllowance']),
-      otherDeductions: this.parseNumber(row['Other deductions-'] || row['otherDeductions']),
       conveyanceAllowance: this.parseNumber(row['Conveyance Allowance'] || row['conveyanceAllowance']),
-      arrears: this.parseNumber(row['Arrears-'] || row['arrears']),
-      bonus: this.parseNumber(row['Bonus-'] || row['bonus']),
+      arrears: this.parseNumber(row['Arrears'] || row['arrears']),
+      grossSalary: this.parseNumber(row['Gross Salary'] || row['grossSalary']),
+      bonus: this.parseNumber(row['Bonus'] || row['bonus']),
       increment: this.parseNumber(row['Increment'] || row['increment']),
-      totalGrossSalary: this.parseNumber(row['Total Gross Salary'] || row['totalGrossSalary'])
+      totalGrossSalary: this.parseNumber(row['Total Gross Salary'] || row['totalGrossSalary']),
+      incomeTax: this.parseNumber(row['IncomeTax'] || row['Income Tax']),
+      loanDeduction: this.parseNumber(row['Loan Deduction'] || row['loanDeduction']),
+      eobi: this.parseNumber(row['EOBI'] || row['eobi']),
+      otherDeductions: this.parseNumber(row['Other Deductions'] || row['otherDeductions']),
+      totalDeductions: this.parseNumber(row['Total Deductions'] || row['totalDeductions']),
+      netPay: this.parseNumber(row['Net Pay'] || row['netPay']),
+      inWords: row['In Words'] || row['inWords'],
     }));
   }
 
