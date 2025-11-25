@@ -78,6 +78,7 @@ type SortDirection = 'asc' | 'desc';
                 <th>Deductions</th>
                 <th>Net Salary</th>
                 <th>Action</th>
+                <th>Email</th>
               </tr>
             </thead>
             <tbody>
@@ -93,6 +94,12 @@ type SortDirection = 'asc' | 'desc';
                   <td>
                     <button class="download-btn" (click)="downloadPayslip(employee)" [disabled]="isDownloadingAll || employee.downloading">
                         <span *ngIf="!employee.downloading">Download</span>
+                        <div *ngIf="employee.downloading" class="loader"></div>
+                    </button>
+                  </td>
+                  <td>
+                    <button *ngIf="employee.email" class="download-btn" (click)="sendPayslip(employee)" [disabled]="isSendingAll || employee.sendingEmail">
+                        <span *ngIf="!employee.downloading">Send</span>
                         <div *ngIf="employee.downloading" class="loader"></div>
                     </button>
                   </td>
@@ -414,6 +421,7 @@ export class EmployeeTableComponent implements OnInit {
   sortDirection: SortDirection = 'asc';
   downloading: boolean = true;
   isDownloadingAll: boolean = false;
+  isSendingAll: boolean = false;
   is2ShadesSelected: boolean = false;
 
   constructor(
@@ -509,6 +517,12 @@ export class EmployeeTableComponent implements OnInit {
     employee.downloading = false
   }
 
+  async sendPayslip(employee: Employee) {
+    employee.sendingEmail = true
+    await this.payslipService.sendPayslipPDF(employee, this.is2ShadesSelected);
+    employee.sendingEmail = false
+  }
+
   onToggle(event: any) {
     const isChecked = event.target.checked;
     this.is2ShadesSelected = isChecked ? true : false;
@@ -517,10 +531,7 @@ export class EmployeeTableComponent implements OnInit {
 
   async downloadAll() {
     if (!this.filteredEmployees?.length) return;
-
     this.isDownloadingAll = true;
-
-    // Sequential batch download to avoid overload
     for (const emp of this.filteredEmployees) {
       emp.downloading = true;
       try {
@@ -530,7 +541,6 @@ export class EmployeeTableComponent implements OnInit {
       }
       emp.downloading = false;
     }
-
     this.isDownloadingAll = false;
   }
 }

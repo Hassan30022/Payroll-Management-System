@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Employee } from '../models/employee.model';
 import jsPDF from 'jspdf';
 import html2canvas from "html2canvas";
+import { GoogleApiService } from './googleapi.service';
 
 @Injectable({
     providedIn: 'root'
@@ -9,6 +10,7 @@ import html2canvas from "html2canvas";
 export class PayslipService {
     generatedDate = this.getTodayDate();
     is2ShadesSelected: boolean = false;
+    constructor(private googleService: GoogleApiService){}
 
     getTodayDate(): string {
         const today = new Date();
@@ -27,6 +29,19 @@ export class PayslipService {
         });
     }
 
+async sendPayslipPDF(employee: Employee, is2ShadesSelected: boolean) {
+  await this.googleService.sendEmail(
+    employee.email,           // receiver
+    'Test Email',                           // subject
+    'Hello, this is a test email from payroll by Hassan !' // body
+  ).then((response: any) => {
+    console.log('Email sent', response);
+  }).catch((err: any) => {
+    console.error('Failed to send email', err);
+  });
+}
+
+
     generatePayslipPDF(employee: Employee, is2ShadesSelected: boolean): Promise<void> {
         this.is2ShadesSelected = is2ShadesSelected;
         return new Promise((resolve) => {
@@ -42,7 +57,7 @@ export class PayslipService {
             document.body.appendChild(container);
 
             html2canvas(container, {
-                scale: 3,
+                scale: 1,
                 backgroundColor: null
             }).then((canvas) => {
                 const imgData = canvas.toDataURL("image/png");
@@ -684,3 +699,45 @@ export class PayslipService {
 
     }
 }
+/** Helper function: safe ArrayBuffer → Base64 conversion */
+// function arrayBufferToBase64(buffer: ArrayBuffer): string {
+//   let binary = '';
+//   const bytes = new Uint8Array(buffer);
+//   const chunkSize = 0x8000; // avoid stack overflow
+//   for (let i = 0; i < bytes.length; i += chunkSize) {
+//     const chunk = bytes.subarray(i, i + chunkSize);
+//     binary += String.fromCharCode.apply(null, chunk as unknown as number[]);
+//   }
+//   return btoa(binary);
+// }
+// function arrayBufferToBase64(buffer: ArrayBuffer): string {
+//   // Use Buffer (Node.js/browser polyfill) or the following DataView method
+//   let binary = '';
+//   const bytes = new Uint8Array(buffer);
+//   const len = bytes.byteLength;
+//   for (let i = 0; i < len; i++) {
+//     binary += String.fromCharCode(bytes[i]);
+//   }
+//   return btoa(binary);
+// }
+// Note: While this approach is cleaner, for massive files, it might still be slow.
+// For the browser, a common highly optimized alternative is:
+
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    let binary = '';
+    
+    // Convert Uint8Array to binary string
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+
+    // Standard Base64 encoding
+    const standardBase64 = btoa(binary);
+
+    // Ensure the attachment body has NO line breaks (MIME requirement for embedded base64)
+    // and strip any padding, although the outer URL-safe encoding handles padding too.
+    return standardBase64.replace(/(\r\n|\n|\r)/gm, "").replace(/=+$/, ''); 
+}
+// Ensure you are using the output from pdf.output('arraybuffer')

@@ -21,4 +21,6 @@ export interface Employee {
   netPay: number;
   inWords: string;
   downloading?: boolean;
+  sendingEmail?: boolean;
+  email: string;
 }

@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ExcelImportService } from '../services/excel-import.service';
 import { EmployeeService } from '../services/employee.service';
+import { GoogleApiService } from '../services/googleapi.service';
 
 @Component({
   selector: 'app-file-upload',
@@ -134,6 +135,17 @@ import { EmployeeService } from '../services/employee.service';
 export class FileUploadComponent {
   @Output() fileProcessed = new EventEmitter<void>();
 
+  ngOnInit(): void {
+    this.googleService.initClient().then(() => {
+      console.log("Gmail API Initialized");
+    });
+      this.initializeGmail()
+  }
+  async initializeGmail() {
+    await this.googleService.initClient();       // load Gmail API
+    await this.googleService.signIn();           // login & get token
+  }
+
   isLoading = false;
   error = '';
   successMessage = '';
@@ -141,7 +153,8 @@ export class FileUploadComponent {
 
   constructor(
     private excelImportService: ExcelImportService,
-    private employeeService: EmployeeService
+    private employeeService: EmployeeService,
+    private googleService: GoogleApiService
   ) { }
 
   onFileSelected(event: any) {
@@ -185,6 +198,7 @@ export class FileUploadComponent {
       this.employeeService.setEmployees(employees);
       this.successMessage = `Successfully imported ${employees.length} employees`;
       this.fileProcessed.emit();
+      // this.sendEmailTest()
 
       setTimeout(() => {
         this.successMessage = '';
@@ -195,4 +209,16 @@ export class FileUploadComponent {
       this.isLoading = false;
     }
   }
+// async sendEmailTest() {
+//   await this.googleService.sendEmail(
+//     'hassanasghar2207@gmail.com',           // receiver
+//     'Test Email',                           // subject
+//     'Hello, this is a test email from Angular!' // body
+//   ).then((response: any) => {
+//     console.log('Email sent', response);
+//   }).catch((err: any) => {
+//     console.error('Failed to send email', err);
+//   });
+// }
+
 }

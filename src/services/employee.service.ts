@@ -40,6 +40,7 @@ export class EmployeeService {
       totalDeductions: this.parseNumber(row['Total Deductions'] || row['totalDeductions']),
       netPay: this.parseNumber(row['Net Pay'] || row['netPay']),
       inWords: row['In Words'] || row['inWords'] || row['In words'],
+      email: row['Email Address'] || row['Email'] || row['email'],
     }));
   }
 

@@ -130,6 +130,7 @@ import { EmployeeTableComponent } from './components/employee-table.component';
   `]
 })
 export class App {
+  
   showTable = false;
 
   onFileProcessed() {
