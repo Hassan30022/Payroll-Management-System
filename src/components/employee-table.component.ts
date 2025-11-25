@@ -14,6 +14,14 @@ type SortDirection = 'asc' | 'desc';
   imports: [CommonModule, FormsModule],
   template: `
     <div class="table-container">
+      <button class="download-btn download-all" (click)="downloadAll()" [disabled]="isDownloadingAll">
+        {{ isDownloadingAll ? 'Downloading...' : 'Download All' }}
+      </button>
+        <div class="switch-button">
+          <input class="switch-button-checkbox" type="checkbox" (change)="onToggle($event)">
+          <label class="switch-button-label" for=""><span class="switch-button-label-span">Synergates</span></label>
+        </div>
+
       <div class="controls">
         <div class="search-box">
           <!-- <span class="search-icon">🔍</span> -->
@@ -83,7 +91,7 @@ type SortDirection = 'asc' | 'desc';
                   <td class="amount deduction">Rs. {{ calculateDeductions(employee).toLocaleString() }}</td>
                   <td class="amount net-salary">Rs. {{ calculateNetSalary(employee).toLocaleString() }}</td>
                   <td>
-                    <button class="download-btn" (click)="downloadPayslip(employee)">
+                    <button class="download-btn" (click)="downloadPayslip(employee)" [disabled]="isDownloadingAll || employee.downloading">
                         <span *ngIf="!employee.downloading">Download</span>
                         <div *ngIf="employee.downloading" class="loader"></div>
                     </button>
@@ -97,6 +105,76 @@ type SortDirection = 'asc' | 'desc';
     </div>
   `,
   styles: [`
+  .download-all{
+        position: absolute;
+    right: 20px;
+    width: max-content !important;
+  }
+.switch-button {
+  box-sizing: border-box !important;
+  background: rgba(255, 255, 255, 0.56) !important;
+  border-radius: 30px !important;
+  overflow: hidden !important;
+  width: 240px !important;
+  text-align: center !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+  letter-spacing: 1px !important;
+  color: black !important;
+  position: relative !important;
+  padding-right: 120px !important;
+  margin-bottom: 10px !important;
+
+  &::before {
+    content: "2 Shades" !important;
+    position: absolute !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    right: 0 !important;
+    width: 120px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 3 !important;
+    pointer-events: none !important;
+  }
+
+  /* FIXED: no more &-checkbox */
+  .switch-button-checkbox {
+    cursor: pointer !important;
+    position: absolute !important;
+    inset: 0 !important;
+    opacity: 0 !important;
+    z-index: 2 !important;
+
+    &:checked + .switch-button-label::before {
+      transform: translateX(120px) !important;
+    }
+  }
+
+  .switch-button-label {
+    position: relative !important;
+    padding: 3px 0 !important;
+    display: block !important;
+    user-select: none !important;
+
+    &::before {
+      content: "" !important;
+      background: #5a7ea6 !important;
+      height: 100% !important;
+      width: 100% !important;
+      position: absolute !important;
+      inset: 0 !important;
+      border-radius: 30px !important;
+      transition: transform 300ms !important;
+    }
+
+    .switch-button-label-span {
+      position: relative !important;
+    }
+  }
+}
+
 
 
 .loader {
@@ -118,6 +196,7 @@ type SortDirection = 'asc' | 'desc';
 }
 @keyframes l3 {to{transform: rotate(1turn)}}
     .table-container {
+      position: relative;
       padding: 20px;
     }
 
@@ -334,6 +413,8 @@ export class EmployeeTableComponent implements OnInit {
   sortField: SortField | null = null;
   sortDirection: SortDirection = 'asc';
   downloading: boolean = true;
+  isDownloadingAll: boolean = false;
+  is2ShadesSelected: boolean = false;
 
   constructor(
     private employeeService: EmployeeService,
@@ -424,7 +505,32 @@ export class EmployeeTableComponent implements OnInit {
 
   async downloadPayslip(employee: Employee) {
     employee.downloading = true
-    await this.payslipService.generatePayslipPDF(employee);
+    await this.payslipService.generatePayslipPDF(employee, this.is2ShadesSelected);
     employee.downloading = false
+  }
+
+  onToggle(event: any) {
+    const isChecked = event.target.checked;
+    this.is2ShadesSelected = isChecked ? true : false;
+    console.log('Selected:', this.is2ShadesSelected);
+  }
+
+  async downloadAll() {
+    if (!this.filteredEmployees?.length) return;
+
+    this.isDownloadingAll = true;
+
+    // Sequential batch download to avoid overload
+    for (const emp of this.filteredEmployees) {
+      emp.downloading = true;
+      try {
+        await this.payslipService.generatePayslipPDF(emp, this.is2ShadesSelected);
+      } catch (err) {
+        console.error(`Failed for ${emp.name}`, err);
+      }
+      emp.downloading = false;
+    }
+
+    this.isDownloadingAll = false;
   }
 }
