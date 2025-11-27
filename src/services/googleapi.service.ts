@@ -75,6 +75,42 @@ ${body}`
     });
   }
 
+sendEmailWithAttachment(to: string, subject: string, body: string, pdfBase64: string) {
+  const boundary = "boundary123";
+
+  // Gmail RFC compliance
+  const pdfChunk = pdfBase64.match(/.{1,76}/g)?.join("\r\n");
+
+  const raw =
+    `To: ${to}\r\n` +
+    `Subject: ${subject}\r\n` +
+    `MIME-Version: 1.0\r\n` +
+    `Content-Type: multipart/mixed; boundary="${boundary}"\r\n\r\n` +
+
+    `--${boundary}\r\n` +
+    `Content-Type: text/plain; charset="UTF-8"\r\n\r\n` +
+    `${body}\r\n\r\n` +
+
+    `--${boundary}\r\n` +
+    `Content-Type: application/pdf; name="payslip.pdf"\r\n` +
+    `Content-Disposition: attachment; filename="payslip.pdf"\r\n` +
+    `Content-Transfer-Encoding: base64\r\n\r\n` +
+    `${pdfChunk}\r\n\r\n` +
+    `--${boundary}--`;
+
+  const encoded = btoa(raw)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  return gapi.client.gmail.users.messages.send({
+    userId: "me",
+    resource: { raw: encoded }
+  });
+}
+
+
+
 // sendEmail(raw: string) {
 //   return gapi.client.gmail.users.messages.send({
 //     userId: 'me',
