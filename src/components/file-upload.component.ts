@@ -136,10 +136,10 @@ export class FileUploadComponent {
   @Output() fileProcessed = new EventEmitter<void>();
 
   ngOnInit(): void {
-    this.googleService.initClient().then(() => {
-      console.log("Gmail API Initialized");
-    });
-      this.initializeGmail()
+    // this.googleService.initClient().then(() => {
+    //   console.log("Gmail API Initialized");
+    // });
+    // this.initializeGmail()
   }
   async initializeGmail() {
     await this.googleService.initClient();       // load Gmail API
@@ -195,6 +195,7 @@ export class FileUploadComponent {
     try {
       const data = await this.excelImportService.parseExcelFile(file);
       const employees = this.employeeService.parseExcelData(data);
+      localStorage.removeItem('employees');
       this.employeeService.setEmployees(employees);
       this.successMessage = `Successfully imported ${employees.length} employees`;
       this.fileProcessed.emit();
@@ -209,16 +210,16 @@ export class FileUploadComponent {
       this.isLoading = false;
     }
   }
-// async sendEmailTest() {
-//   await this.googleService.sendEmail(
-//     'hassanasghar2207@gmail.com',           // receiver
-//     'Test Email',                           // subject
-//     'Hello, this is a test email from Angular!' // body
-//   ).then((response: any) => {
-//     console.log('Email sent', response);
-//   }).catch((err: any) => {
-//     console.error('Failed to send email', err);
-//   });
-// }
+  // async sendEmailTest() {
+  //   await this.googleService.sendEmail(
+  //     'hassanasghar2207@gmail.com',           // receiver
+  //     'Test Email',                           // subject
+  //     'Hello, this is a test email from Angular!' // body
+  //   ).then((response: any) => {
+  //     console.log('Email sent', response);
+  //   }).catch((err: any) => {
+  //     console.error('Failed to send email', err);
+  //   });
+  // }
 
 }

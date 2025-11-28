@@ -9,12 +9,38 @@ export class EmployeeService {
   private employeesSubject = new BehaviorSubject<Employee[]>([]);
   public employees$ = this.employeesSubject.asObservable();
 
+  constructor() {
+    this.loadFromLocalStorage();
+  }
+
   setEmployees(employees: Employee[]) {
     this.employeesSubject.next(employees);
+    localStorage.setItem('employees', JSON.stringify(employees));
   }
 
   getEmployees(): Employee[] {
     return this.employeesSubject.value;
+  }
+
+  private loadFromLocalStorage() {
+    const stored = localStorage.getItem('employees');
+    if (stored) {
+      this.employeesSubject.next(JSON.parse(stored));
+    }
+  }
+
+  updateEmployee(updated: Employee) {
+    const cleaned = { ...updated };
+    delete cleaned.downloading;
+    delete cleaned.sendingEmail;
+
+    const list = this.getEmployees();
+    const index = list.findIndex(e => e.id === updated.id);
+
+    if (index !== -1) {
+      list[index] = cleaned;
+      this.setEmployees([...list]);
+    }
   }
 
   parseExcelData(data: any[]): Employee[] {

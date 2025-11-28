@@ -3,6 +3,7 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { FileUploadComponent } from './components/file-upload.component';
 import { EmployeeTableComponent } from './components/employee-table.component';
+import { GoogleApiService } from './services/googleapi.service';
 
 @Component({
   selector: 'app-root',
@@ -15,6 +16,7 @@ import { EmployeeTableComponent } from './components/employee-table.component';
           <h1 class="app-title">Payroll Management System</h1>
           <p class="app-subtitle">Employee Salary Management & Payslip Generation</p>
         </div>
+        <button class="login-button" (click)="login()" [disabled]="isLoggedIn">{{isLoggedIn ? 'LoggedIn' : 'LogIn'}}</button>
       </header>
 
       <main class="app-main">
@@ -35,6 +37,8 @@ import { EmployeeTableComponent } from './components/employee-table.component';
     </div>
   `,
   styles: [`
+
+  
     :host {
       display: block;
       min-height: 100vh;
@@ -53,6 +57,34 @@ import { EmployeeTableComponent } from './components/employee-table.component';
       padding: 30px 20px;
       box-shadow: 0 4px 20px rgba(90, 126, 166, 0.3);
       border-bottom: 3px solid #a2cd96;
+    }
+
+    .login-button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: linear-gradient(135deg, #a2cd96, #339184);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      width: 100px;
+      height: 40px;
+    }
+
+    .login-button:hover {
+      background: linear-gradient(135deg, #8cbe7eff, #29796eff);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(90, 126, 166, 0.4);
+    }
+
+    .login-button:active {
+      transform: translateY(0);
     }
 
     .header-content {
@@ -130,11 +162,29 @@ import { EmployeeTableComponent } from './components/employee-table.component';
   `]
 })
 export class App {
-  
+
+  isLoggedIn = false;
   showTable = false;
+
+  constructor(private googleService: GoogleApiService) { }
+
+  ngOnInit() {
+    localStorage.getItem('employees') ? this.showTable = true : this.showTable = false;
+  }
 
   onFileProcessed() {
     this.showTable = true;
+  }
+
+  async login() {
+    await this.googleService.initClient().then(() => {
+      console.log("Gmail API Initialized");
+    });
+    await this.googleService.signIn().then(() => {
+      this.isLoggedIn = true;
+      console.log("Login Status: ", this.isLoggedIn);
+    }
+    );
   }
 }
 

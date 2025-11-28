@@ -3,6 +3,7 @@ import { Employee } from '../models/employee.model';
 import jsPDF from 'jspdf';
 import html2canvas from "html2canvas";
 import { GoogleApiService } from './googleapi.service';
+import { EmployeeService } from './employee.service';
 
 @Injectable({
     providedIn: 'root'
@@ -10,7 +11,7 @@ import { GoogleApiService } from './googleapi.service';
 export class PayslipService {
     generatedDate = this.getTodayDate();
     is2ShadesSelected: boolean = false;
-    constructor(private googleService: GoogleApiService) { }
+    constructor(private googleService: GoogleApiService, private employeeService: EmployeeService) { }
 
     getTodayDate(): string {
         const today = new Date();
@@ -81,8 +82,12 @@ export class PayslipService {
                     pdfBase64
                 ).then((res: any) => {
                     console.log("Email sent with PDF!", res);
+                    employee.sentEmail = true;
+                    this.employeeService.updateEmployee(employee);
                 }).catch((err: any) => {
                     console.error("Email sending failed", err);
+                    employee.sentEmail = false;
+                    this.employeeService.updateEmployee(employee);
                 });
                 container.remove();
                 resolve(pdfBase64);
@@ -119,7 +124,8 @@ export class PayslipService {
                 pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
 
                 pdf.save(`${employee.name}_payslip.pdf`);
-
+                employee.downloaded = true;
+                this.employeeService.updateEmployee(employee);
                 container.remove();
                 resolve(); // 🟢 PDF fully saved — tell component to stop loader
             });

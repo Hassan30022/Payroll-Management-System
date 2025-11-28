@@ -23,4 +23,6 @@ export interface Employee {
   downloading?: boolean;
   sendingEmail?: boolean;
   email: string;
+  downloaded?: boolean;
+  sentEmail?: boolean;
 }

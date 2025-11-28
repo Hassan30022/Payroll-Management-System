@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { EmployeeService } from '../services/employee.service';
 import { PayslipService } from '../services/payslip.service';
 import { Employee } from '../models/employee.model';
+import { GoogleApiService } from '../services/googleapi.service';
 
 type SortField = keyof Employee;
 type SortDirection = 'asc' | 'desc';
@@ -76,9 +77,9 @@ type SortDirection = 'asc' | 'desc';
                 </th>
                 <th>Allowances</th>
                 <th>Deductions</th>
-                <th>Net Salary</th>
+                <th style="display: flex; justify-content: space-between;">Net Salary <div (click)="toggleNetSalary()"><svg style="width: 19px; cursor: pointer;" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <g clip-path="url(#clip0_15_200)"> <rect width="24" height="24" fill="none"></rect> <circle cx="12" cy="13" r="2" stroke="#000000" stroke-linejoin="round"></circle> <path d="M12 7.5C7.69517 7.5 4.47617 11.0833 3.39473 12.4653C3.14595 12.7832 3.14595 13.2168 3.39473 13.5347C4.47617 14.9167 7.69517 18.5 12 18.5C16.3048 18.5 19.5238 14.9167 20.6053 13.5347C20.8541 13.2168 20.8541 12.7832 20.6053 12.4653C19.5238 11.0833 16.3048 7.5 12 7.5Z" stroke="#000000" stroke-linecap="round" stroke-linejoin="round"></path> </g> <defs> <clipPath id="clip0_15_200"> <rect width="24" height="24" fill="white"></rect> </clipPath> </defs> </g></svg></div></th>
                 <th>Action</th>
-                <th>Email</th>
+                <th>{{showEmailColumn ? 'Email' : ''}}</th>
               </tr>
             </thead>
             <tbody>
@@ -90,17 +91,23 @@ type SortDirection = 'asc' | 'desc';
                   <td class="amount">Rs. {{ employee.totalGrossSalary.toLocaleString() }}</td>
                   <td class="amount">Rs. {{ calculateAllowances(employee).toLocaleString() }}</td>
                   <td class="amount deduction">Rs. {{ calculateDeductions(employee).toLocaleString() }}</td>
-                  <td class="amount net-salary">Rs. {{ calculateNetSalary(employee).toLocaleString() }}</td>
+                  <!-- <td class="amount net-salary">Rs. {{ calculateNetSalary(employee).toLocaleString() }}</td> -->
+                  <td class="amount net-salary">Rs.   <ng-container *ngIf="showNetSalary; else hiddenSalary">
+                            {{ calculateNetSalary(employee).toLocaleString() }}
+                          </ng-container>
+                          <ng-template #hiddenSalary>
+                            XXXXXX
+                          </ng-template></td>
                   <td>
-                    <button class="download-btn" (click)="downloadPayslip(employee)" [disabled]="isDownloadingAll || employee.downloading">
-                        <span *ngIf="!employee.downloading">Download</span>
+                    <button class="download-btn" (click)="downloadPayslip(employee)" [ngStyle]="{'background': (employee.downloaded && !employee.downloading) ? '#25b09b' : ''}" [disabled]="isDownloadingAll || employee.downloading">
+                        <span *ngIf="!employee.downloading">{{employee.downloaded ? 'Downloaded' : 'Download'}}</span>
                         <div *ngIf="employee.downloading" class="loader"></div>
                     </button>
                   </td>
                   <td>
-                    <button *ngIf="employee.email" class="download-btn" (click)="sendPayslip(employee)" [disabled]="isSendingAll || employee.sendingEmail">
-                        <span *ngIf="!employee.downloading">Send</span>
-                        <div *ngIf="employee.downloading" class="loader"></div>
+                    <button *ngIf="employee.email" class="download-btn" [ngStyle]="{'background': employee.sentEmail ? '#25b09b' : ''}" (click)="sendPayslip(employee)" [disabled]="isSendingAll || employee.sendingEmail || !isSignedIn()">
+                        <span *ngIf="!employee.sendingEmail">{{employee.sentEmail ? 'Sent' : 'Send'}}</span>
+                        <div *ngIf="employee.sendingEmail" class="loader"></div>
                     </button>
                   </td>
                 </tr>
@@ -354,7 +361,6 @@ type SortDirection = 'asc' | 'desc';
       background: linear-gradient(135deg, #5a7ea6, #4a6e96);
       color: #fff;
       border: none;
-      padding: 10px 20px;
       border-radius: 6px;
       cursor: pointer;
       font-size: 13px;
@@ -363,6 +369,7 @@ type SortDirection = 'asc' | 'desc';
       white-space: nowrap;
       width: 100px;
       height: 40px;
+      min-width: 100px
     }
 
     .download-btn:hover {
@@ -423,10 +430,15 @@ export class EmployeeTableComponent implements OnInit {
   isDownloadingAll: boolean = false;
   isSendingAll: boolean = false;
   is2ShadesSelected: boolean = false;
+  showNetSalary: boolean = true;
 
+  toggleNetSalary() {
+    this.showNetSalary = !this.showNetSalary;
+  }
   constructor(
     private employeeService: EmployeeService,
-    private payslipService: PayslipService
+    private payslipService: PayslipService,
+    private googleService: GoogleApiService
   ) { }
 
   ngOnInit() {
@@ -436,6 +448,9 @@ export class EmployeeTableComponent implements OnInit {
     });
   }
 
+  isSignedIn(): boolean {
+    return this.googleService.isSignedIn();
+  }
   applyFilters() {
     let filtered = [...this.employees];
 
@@ -515,6 +530,7 @@ export class EmployeeTableComponent implements OnInit {
     employee.downloading = true
     await this.payslipService.generatePayslipPDF(employee, this.is2ShadesSelected);
     employee.downloading = false
+    this.employeeService.updateEmployee(employee);
   }
 
   async sendPayslip(employee: Employee) {
@@ -542,5 +558,9 @@ export class EmployeeTableComponent implements OnInit {
       emp.downloading = false;
     }
     this.isDownloadingAll = false;
+  }
+
+  get showEmailColumn(): boolean {
+    return this.filteredEmployees?.some(emp => !!emp.email);
   }
 }
