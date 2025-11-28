@@ -78,14 +78,16 @@ export class PayslipService {
                 this.googleService.sendEmailWithAttachment(
                     employee.email,
                     "Monthly Payslip",
-                    "Your monthly payslip is attached.",
+                    `Your monthly payslip is attached.\n\nRegards,\n ${is2ShadesSelected ? '2 Shades BPO' : 'The Synergates Business Solutions (PVT) Ltd.' }`,
                     pdfBase64
                 ).then((res: any) => {
                     console.log("Email sent with PDF!", res);
+                    employee.sendingEmail = false;
                     employee.sentEmail = true;
                     this.employeeService.updateEmployee(employee);
                 }).catch((err: any) => {
                     console.error("Email sending failed", err);
+                    employee.sendingEmail = false;
                     employee.sentEmail = false;
                     this.employeeService.updateEmployee(employee);
                 });

@@ -536,7 +536,7 @@ export class EmployeeTableComponent implements OnInit {
   async sendPayslip(employee: Employee) {
     employee.sendingEmail = true
     await this.payslipService.sendPayslipPDF(employee, this.is2ShadesSelected);
-    employee.sendingEmail = false
+    // employee.sendingEmail = false
   }
 
   onToggle(event: any) {
