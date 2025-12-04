@@ -58,7 +58,7 @@ export class PayslipService {
             document.body.appendChild(container);
 
             html2canvas(container, {
-                scale: 1,
+                scale: 2,
                 backgroundColor: null
             }).then((canvas) => {
                 const imgData = canvas.toDataURL("image/png");
@@ -112,7 +112,7 @@ export class PayslipService {
             document.body.appendChild(container);
 
             html2canvas(container, {
-                scale: 1,
+                scale: 2,
                 backgroundColor: null
             }).then((canvas) => {
                 const imgData = canvas.toDataURL("image/png");
