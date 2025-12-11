@@ -67,6 +67,10 @@ export class EmployeeService {
       netPay: this.parseNumber(row['Net Pay'] || row['netPay']),
       inWords: row['In Words'] || row['inWords'] || row['In words'],
       email: row['Email Address'] || row['Email'] || row['email'],
+      dependabilityAllowances: row['Dependability Allowances'] || '',
+      punctualityAllowances: row['Punctuality Allowances'] || '',
+      mannedMinutesAllowances: row['Manned Minutes Allowances'] || '',
+      leaveDeductions: row['Leave Deduction'] || '',
     }));
   }
 

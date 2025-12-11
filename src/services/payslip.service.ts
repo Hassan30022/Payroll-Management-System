@@ -691,29 +691,29 @@ export class PayslipService {
                 <tr>
                     <td class="label">Conveyance Allowance</td>
                     <td class="value">${this.formatNumber(employee.conveyanceAllowance)}</td>
-                    <td class="value"></td>
-                    <td class="value"></td>
+                    <td class="value">Dependability Allowances</td>
+                    <td class="value">${this.formatNumber(employee?.dependabilityAllowances??0)}</td>
                 </tr>
 
                 <tr>
                     <td class="label">Arrears</td>
                     <td class="value">${this.formatNumber(employee.arrears)}</td>
-                    <td class="value"></td>
-                    <td class="value"></td>
+                    <td class="value">Punctuality Allowances</td>
+                    <td class="value">${this.formatNumber(employee?.punctualityAllowances??0)}</td>
                 </tr>
 
                 <tr>
                     <td class="label">Bonus</td>
                     <td class="value">${this.formatNumber(employee.bonus)}</td>
-                    <td class="value"></td>
-                    <td class="value"></td>
+                    <td class="value">Manned Minutes Allowances</td>
+                    <td class="value">${this.formatNumber(employee?.mannedMinutesAllowances??0)}</td>
                 </tr>
 
                 <tr>
                     <td class="label">Increment</td>
                     <td class="value">${this.formatNumber(employee.increment)}</td>
-                    <td class="value"></td>
-                    <td class="value"></td>
+                    <td class="value"Leave Deduction></td>
+                    <td class="value">${this.formatNumber(employee?.leaveDeductions??0)}</td>
                 </tr>
 
                 <!-- Total Row -->

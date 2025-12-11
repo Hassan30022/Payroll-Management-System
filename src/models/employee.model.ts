@@ -25,4 +25,8 @@ export interface Employee {
   email: string;
   downloaded?: boolean;
   sentEmail?: boolean;
+  dependabilityAllowances?: number;
+  punctualityAllowances?: number;
+  mannedMinutesAllowances?: number;
+  leaveDeductions?: number;
 }
